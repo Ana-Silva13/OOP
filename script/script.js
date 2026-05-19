@@ -7,7 +7,9 @@ class Foto{
     }
 
     obterCoordenadas(){
-        return `Lat: ${this.localizacao.lat.toFixed(2)}, Lon: ${this.localizacao.lon.toFixed(2)}`;
+        const lat = isNaN(this.localizacao.lat) ? '—' : this.localizacao.lat.toFixed(2);
+        const lon = isNaN(this.localizacao.lon) ? '—' : this.localizacao.lon.toFixed(2);
+        return { lat, lon };
     }
 
     get resumo(){
@@ -17,7 +19,6 @@ class Foto{
 
 const btn = document.querySelector("#btn-adicionar");
 const galeria = document.querySelector("#galeria");
-console.log(btn);
 
 btn.addEventListener('click', ()=>{
     const url = document.querySelector("#ipt-url").value.trim();
@@ -28,35 +29,39 @@ btn.addEventListener('click', ()=>{
     const lat = latInput === '' ? NaN : parseFloat(latInput);
     const lon = lonInput === '' ? NaN : parseFloat(lonInput);
 
-    if(!url || !legenda) return alert("Por favor, insira a URL e a legenda.");
+    if(!url || !legenda) {
+        return alert("Por favor, insira a URL e a legenda.");
+    }
 
     if(!url.startsWith('http://') && !url.startsWith('https://')) {
         return alert("URL inválida. Use http:// ou https://");
     }
 
-    const novaFoto = new Foto(url, legenda, isNaN(lat) ? 0 : lat, isNaN(lon) ? 0 : lon);
+    const novaFoto = new Foto(url, legenda, lat, lon);
+    const coordenadas = novaFoto.obterCoordenadas();
 
     const card = document.createElement("div");
     card.className = 'card-foto';
 
     card.innerHTML = `
-    <img src="${novaFoto.url}" 
-    alt="${novaFoto.legenda}" 
-    onerror="this.src='https://via.placeholder.com/280x200?text=Imagem+nao+encontrada'" />
+        <img src="${novaFoto.url}" 
+            alt="${novaFoto.legenda}" 
+            onerror="this.src='https://via.placeholder.com/280x200?text=Imagem+nao+encontrada'" />
 
-    <div class="card-info">
-        <h3>${novaFoto.legenda}</h3>
-        <p>${novaFoto.resumo}</p>
-    </div>
+        <div class="card-info">
+            <h3>${novaFoto.legenda}</h3>
+            <p>${novaFoto.resumo}</p>
+        </div>
 
-    <div class="card-footer">
-        📍 ${novaFoto.obterCoordenadas()}
-    </div>
-`;
+        <div class="card-footer">
+            <div class="coord-item">Lat: ${coordenadas.lat}</div>
+            <div class="coord-item">Lon: ${coordenadas.lon}</div>
+        </div>
+    `;
 
     galeria.prepend(card);
-    //Limpar Form
-    document.querySelectorAll('input').forEach(i=> i.value = "");
+
+    document.querySelectorAll('.form-card input').forEach(i=> i.value = "");
 });
 
 const btnLocalizacao = document.querySelector("#btn-localizacao");
